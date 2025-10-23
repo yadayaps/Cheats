@@ -12,8 +12,8 @@ gui.ResetOnSpawn = false
 gui.Parent = playerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,260,0,160)
-frame.Position = UDim2.new(0.5,-130,0.5,-80)
+frame.Size = UDim2.new(0,260,0,200)
+frame.Position = UDim2.new(0.5,-130,0.5,-100)
 frame.BackgroundColor3 = Color3.fromRGB(20,20,30)
 frame.BorderSizePixel = 0
 frame.Visible = true
@@ -34,8 +34,8 @@ title.Parent = frame
 local openKeyLabel = Instance.new("TextLabel")
 openKeyLabel.Position = UDim2.new(0,10,0,35)
 openKeyLabel.Size = UDim2.new(0,120,0,25)
-openKeyLabel.Font = Enum.Font.Gotham
 openKeyLabel.BackgroundTransparency = 1
+openKeyLabel.Font = Enum.Font.Gotham
 openKeyLabel.Text = "Open GUI Key:"
 openKeyLabel.TextColor3 = Color3.fromRGB(200,200,200)
 openKeyLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -90,6 +90,15 @@ sliderButton.Size = UDim2.new(0,10,1,0)
 sliderButton.BackgroundColor3 = Color3.fromRGB(150,200,255)
 sliderButton.Parent = slider
 
+local gammaButton = Instance.new("TextButton")
+gammaButton.Position = UDim2.new(0,10,0,140)
+gammaButton.Size = UDim2.new(0,220,0,25)
+gammaButton.BackgroundColor3 = Color3.fromRGB(40,40,60)
+gammaButton.Font = Enum.Font.GothamSemibold
+gammaButton.TextColor3 = Color3.new(1,1,1)
+gammaButton.Text = "Gamma Boost: OFF"
+gammaButton.Parent = frame
+
 local openGuiButton = Instance.new("Frame")
 openGuiButton.Size = UDim2.new(0,100,0,30)
 openGuiButton.Position = UDim2.new(0,10,1,-40)
@@ -110,6 +119,8 @@ openText.Parent = openGuiButton
 
 local draggingSlider = false
 local brightnessValue = 2
+local gammaBoostActive = false
+local colorCorrection
 
 slider.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -126,6 +137,27 @@ UserInputService.InputChanged:Connect(function(input)
 		local relX = math.clamp((input.Position.X - slider.AbsolutePosition.X)/slider.AbsoluteSize.X,0,1)
 		sliderButton.Position = UDim2.new(0,relX*(slider.AbsoluteSize.X-sliderButton.AbsoluteSize.X),0,0)
 		brightnessValue = 0.2 + relX*5
+	end
+end)
+
+gammaButton.MouseButton1Click:Connect(function()
+	gammaBoostActive = not gammaBoostActive
+	if gammaBoostActive then
+		if not colorCorrection then
+			colorCorrection = Instance.new("ColorCorrectionEffect")
+			colorCorrection.Contrast = 0.3
+			colorCorrection.Saturation = 0.3
+			colorCorrection.Brightness = 0.05
+			colorCorrection.Name = "FullBrightGamma"
+			colorCorrection.Parent = Lighting
+		end
+		colorCorrection.Enabled = true
+		gammaButton.Text = "Gamma Boost: ON"
+	else
+		if colorCorrection then
+			colorCorrection.Enabled = false
+		end
+		gammaButton.Text = "Gamma Boost: OFF"
 	end
 end)
 
