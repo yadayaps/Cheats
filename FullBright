@@ -1,0 +1,217 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "FullBrightGui"
+gui.ResetOnSpawn = false
+gui.Parent = playerGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,260,0,160)
+frame.Position = UDim2.new(0.5,-130,0.5,-80)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,30)
+frame.BorderSizePixel = 0
+frame.Visible = true
+frame.Parent = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0,8)
+corner.Parent = frame
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1,0,0,30)
+title.Font = Enum.Font.GothamBold
+title.BackgroundTransparency = 1
+title.Text = "FullBright Visualizer"
+title.TextColor3 = Color3.fromRGB(150,200,255)
+title.Parent = frame
+
+local openKeyLabel = Instance.new("TextLabel")
+openKeyLabel.Position = UDim2.new(0,10,0,35)
+openKeyLabel.Size = UDim2.new(0,120,0,25)
+openKeyLabel.Font = Enum.Font.Gotham
+openKeyLabel.BackgroundTransparency = 1
+openKeyLabel.Text = "Open GUI Key:"
+openKeyLabel.TextColor3 = Color3.fromRGB(200,200,200)
+openKeyLabel.TextXAlignment = Enum.TextXAlignment.Left
+openKeyLabel.Parent = frame
+
+local openKeyButton = Instance.new("TextButton")
+openKeyButton.Position = UDim2.new(0,130,0,35)
+openKeyButton.Size = UDim2.new(0,60,0,25)
+openKeyButton.BackgroundColor3 = Color3.fromRGB(40,40,60)
+openKeyButton.Font = Enum.Font.GothamSemibold
+openKeyButton.TextColor3 = Color3.new(1,1,1)
+openKeyButton.Text = "Insert"
+openKeyButton.Parent = frame
+
+local bindLabel = Instance.new("TextLabel")
+bindLabel.Position = UDim2.new(0,10,0,65)
+bindLabel.Size = UDim2.new(0,100,0,25)
+bindLabel.Text = "Toggle Key:"
+bindLabel.BackgroundTransparency = 1
+bindLabel.Font = Enum.Font.Gotham
+bindLabel.TextColor3 = Color3.fromRGB(200,200,200)
+bindLabel.TextXAlignment = Enum.TextXAlignment.Left
+bindLabel.Parent = frame
+
+local bindButton = Instance.new("TextButton")
+bindButton.Position = UDim2.new(0,110,0,65)
+bindButton.Size = UDim2.new(0,60,0,25)
+bindButton.BackgroundColor3 = Color3.fromRGB(40,40,60)
+bindButton.Font = Enum.Font.GothamSemibold
+bindButton.TextColor3 = Color3.new(1,1,1)
+bindButton.Text = "None"
+bindButton.Parent = frame
+
+local sliderLabel = Instance.new("TextLabel")
+sliderLabel.Position = UDim2.new(0,10,0,105)
+sliderLabel.Size = UDim2.new(0,150,0,25)
+sliderLabel.BackgroundTransparency = 1
+sliderLabel.Font = Enum.Font.Gotham
+sliderLabel.Text = "Brightness:"
+sliderLabel.TextColor3 = Color3.fromRGB(200,200,200)
+sliderLabel.TextXAlignment = Enum.TextXAlignment.Left
+sliderLabel.Parent = frame
+
+local slider = Instance.new("Frame")
+slider.Position = UDim2.new(0,110,0,110)
+slider.Size = UDim2.new(0,120,0,10)
+slider.BackgroundColor3 = Color3.fromRGB(60,60,80)
+slider.Parent = frame
+
+local sliderButton = Instance.new("Frame")
+sliderButton.Size = UDim2.new(0,10,1,0)
+sliderButton.BackgroundColor3 = Color3.fromRGB(150,200,255)
+sliderButton.Parent = slider
+
+local openGuiButton = Instance.new("Frame")
+openGuiButton.Size = UDim2.new(0,100,0,30)
+openGuiButton.Position = UDim2.new(0,10,1,-40)
+openGuiButton.BackgroundColor3 = Color3.fromRGB(40,40,60)
+openGuiButton.Parent = gui
+
+local c2 = Instance.new("UICorner")
+c2.CornerRadius = UDim.new(0,6)
+c2.Parent = openGuiButton
+
+local openText = Instance.new("TextButton")
+openText.Size = UDim2.new(1,0,1,0)
+openText.BackgroundTransparency = 1
+openText.Text = "Open GUI"
+openText.Font = Enum.Font.GothamBold
+openText.TextColor3 = Color3.fromRGB(150,200,255)
+openText.Parent = openGuiButton
+
+local draggingSlider = false
+local brightnessValue = 2
+
+slider.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		draggingSlider = true
+	end
+end)
+slider.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		draggingSlider = false
+	end
+end)
+UserInputService.InputChanged:Connect(function(input)
+	if draggingSlider and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local relX = math.clamp((input.Position.X - slider.AbsolutePosition.X)/slider.AbsoluteSize.X,0,1)
+		sliderButton.Position = UDim2.new(0,relX*(slider.AbsoluteSize.X-sliderButton.AbsoluteSize.X),0,0)
+		brightnessValue = 0.2 + relX*5
+	end
+end)
+
+local fullBrightActive = false
+local waitingForKey, waitingForOpenKey = false, false
+local toggleKey, openGuiKey = nil, Enum.KeyCode.Insert
+
+bindButton.MouseButton1Click:Connect(function()
+	bindButton.Text = "Press..."
+	waitingForKey = true
+end)
+openKeyButton.MouseButton1Click:Connect(function()
+	openKeyButton.Text = "Press..."
+	waitingForOpenKey = true
+end)
+UserInputService.InputBegan:Connect(function(input, gp)
+	if gp then return end
+	if openGuiKey and input.KeyCode == openGuiKey then
+		frame.Visible = not frame.Visible
+	end
+	if waitingForOpenKey then
+		openGuiKey = input.KeyCode
+		openKeyButton.Text = input.KeyCode.Name
+		waitingForOpenKey = false
+		return
+	end
+	if waitingForKey then
+		toggleKey = input.KeyCode
+		bindButton.Text = input.KeyCode.Name
+		waitingForKey = false
+		return
+	end
+	if toggleKey and input.KeyCode == toggleKey then
+		fullBrightActive = not fullBrightActive
+	end
+end)
+openText.MouseButton1Click:Connect(function()
+	frame.Visible = not frame.Visible
+end)
+
+local origB = Lighting.Brightness
+local origA = Lighting.OutdoorAmbient
+
+local function applyFullBright(level)
+	Lighting.Brightness = level
+	Lighting.OutdoorAmbient = Color3.new(level/5, level/5, level/5)
+end
+local function resetFullBright()
+	Lighting.Brightness = origB
+	Lighting.OutdoorAmbient = origA
+end
+RunService.RenderStepped:Connect(function()
+	if fullBrightActive then
+		applyFullBright(brightnessValue)
+	else
+		resetFullBright()
+	end
+end)
+
+local draggingFrame = false
+local dragInput, dragStart, startPos
+local function update(input)
+	local delta = input.Position - dragStart
+	frame.Position = UDim2.new(startPos.X.Scale,startPos.X.Offset+delta.X,startPos.Y.Scale,startPos.Y.Offset+delta.Y)
+end
+frame.InputBegan:Connect(function(input)
+	if draggingSlider then return end
+	if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then
+		draggingFrame=true
+		dragStart=input.Position
+		startPos=frame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState==Enum.UserInputState.End then
+				draggingFrame=false
+			end
+		end)
+	end
+end)
+frame.InputChanged:Connect(function(input)
+	if input.UserInputType==Enum.UserInputType.MouseMovement or input.UserInputType==Enum.UserInputType.Touch then
+		dragInput=input
+	end
+end)
+UserInputService.InputChanged:Connect(function(input)
+	if draggingSlider then return end
+	if input==dragInput and draggingFrame then
+		update(input)
+	end
+end)
